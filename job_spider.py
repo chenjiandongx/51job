@@ -45,9 +45,13 @@ class JobSpider():
         """ 爬取职位描述 """
         for c in self.company:
             r = requests.get(c.get('href'), headers=self.headers).content.decode('gbk')
-            bs = BeautifulSoup(r, 'lxml').find('div', class_="bmsg job_msg inbox").text
-            s = bs.replace("举报", "").replace("分享", "").replace("\t", "").strip()
-            self.text += s
+            '''有些网页不包含所需的class'''
+            try:
+                bs = BeautifulSoup(r, 'lxml').find('div', class_="bmsg job_msg inbox").text
+                s = bs.replace("举报", "").replace("分享", "").replace("微信","").replace("邮件","").replace("\t", "").strip()
+                self.text += s
+            except:
+                pass
         # print(self.text)
         file_path = os.path.join("data", "post_require.txt")
         with open(file_path, "w+", encoding="utf-8") as f:
@@ -73,6 +77,7 @@ class JobSpider():
         pprint(counter_sort)
         file_path = os.path.join("data", "post_pre_desc_counter.csv")
         with open(file_path, "w+", encoding="utf-8") as f:
+            f.write(u'\ufeff')     #避免生成的csv中文乱码
             f_csv = csv.writer(f)
             f_csv.writerows(counter_sort)
 
@@ -84,6 +89,7 @@ class JobSpider():
         pprint(counter_most)
         file_path = os.path.join("data", "post_pre_counter.csv")
         with open(file_path, "w+", encoding="utf-8") as f:
+            f.write(u'\ufeff')
             f_csv = csv.writer(f)
             f_csv.writerows(counter_most)
 
@@ -95,6 +101,7 @@ class JobSpider():
         pprint(lst)
         file_path = os.path.join("data", "post_salary_locate.csv")
         with open(file_path, "w+", encoding="utf-8") as f:
+            f.write(u'\ufeff')
             f_csv = csv.writer(f)
             f_csv.writerows(lst)
 
@@ -107,12 +114,15 @@ class JobSpider():
         with open(file_path, "r", encoding="utf-8") as f:
             f_csv = csv.reader(f)
             for row in f_csv:
-                if "万/月" in row[0]:
-                    mouth.append((row[0][:-3], row[2], row[1]))
-                elif "万/年" in row[0]:
-                    year.append((row[0][:-3], row[2], row[1]))
-                elif "千/月" in row[0]:
-                    thouand.append((row[0][:-3], row[2], row[1]))
+                try:
+                    if "万/月" in row[0]:
+                        mouth.append((row[0][:-3], row[2], row[1]))
+                    elif "万/年" in row[0]:
+                        year.append((row[0][:-3], row[2], row[1]))
+                    elif "千/月" in row[0]:
+                        thouand.append((row[0][:-3], row[2], row[1]))
+                except:
+                    pass
         # pprint(mouth)
         calc = []
         for m in mouth:
@@ -130,6 +140,7 @@ class JobSpider():
         pprint(calc)
         file_path = os.path.join("data", "post_salary.csv")
         with open(file_path, "w+", encoding="utf-8") as f:
+            f.write(u'\ufeff')
             f_csv = csv.writer(f)
             f_csv.writerows(calc)
 
@@ -143,6 +154,7 @@ class JobSpider():
         pprint(counter)
         file_path = os.path.join("data", "post_salary_counter1.csv")
         with open(file_path, "w+", encoding="utf-8") as f:
+            f.write(u'\ufeff')
             f_csv = csv.writer(f)
             f_csv.writerows(counter)
 
@@ -153,7 +165,10 @@ class JobSpider():
         with open(file_path, "r", encoding="utf-8") as f:
             f_csv = csv.reader(f)
             for row in f_csv:
-                counter[row[0]] = counter.get(row[0], int(row[1]))
+                try:
+                    counter[row[0]] = counter.get(row[0], int(row[1]))
+                except:
+                    pass
             pprint(counter)
         file_path = os.path.join("font", "msyh.ttf")
         wordcloud = WordCloud(font_path=file_path, 
